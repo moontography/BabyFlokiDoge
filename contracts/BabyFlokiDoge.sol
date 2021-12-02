@@ -1678,6 +1678,7 @@ contract BabyFlokiDoge is Context, IERC20, Ownable {
     // split the liquidity balance into halves
     uint256 half = liquidityBalance.div(2);
     uint256 otherHalf = liquidityBalance.sub(half);
+    uint256 tokensToSwapForETH = half.add(marketingBalance);
 
     // capture the contract's current ETH balance.
     // this is so that we can capture exactly the amount of ETH that the
@@ -1686,15 +1687,15 @@ contract BabyFlokiDoge is Context, IERC20, Ownable {
     uint256 initialBalance = address(this).balance;
 
     // swap tokens for ETH
-    swapTokensForEth(half.add(marketingBalance)); // <- this breaks the ETH -> HATE swap when swap+liquify is triggered
+    swapTokensForEth(tokensToSwapForETH); // <- this breaks the ETH -> HATE swap when swap+liquify is triggered
 
     // how much ETH did we just swap into?
     uint256 newBalance = address(this).balance.sub(initialBalance);
 
     uint256 marketingETHBalance = newBalance.mul(marketingBalance).div(
-      marketingBalance.add(half)
+      tokensToSwapForETH
     );
-    uint256 liquidityETHBalance = marketingETHBalance.sub(marketingETHBalance);
+    uint256 liquidityETHBalance = newBalance.sub(marketingETHBalance);
 
     // add liquidity to uniswap
     addLiquidity(otherHalf, liquidityETHBalance);
